@@ -1,0 +1,4 @@
+flask~=2.3.3
+flask_limiter
+
+PyYAML~=6.0.1

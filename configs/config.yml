@@ -1,0 +1,13 @@
+# API Binding configuration
+# This can sit behind a reverse proxy
+host: "0.0.0.0"
+port: 1025
+
+# Endpoint configuration
+email_ratelimit: "3/minutes" # This translates to 3 requests per minute from the same IP
+
+# Email configuration
+# Only supports starttls (port 587)
+mail_host: "smtp.hostinger.com"
+mail_port: 587 # Don't change, even if provider does not use tls, the protocol will handle it
+mail_username: "contact@sembleit.ro"
