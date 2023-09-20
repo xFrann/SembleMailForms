@@ -1,13 +1,22 @@
 import yaml
 
 config: dict
+recipient_map: dict
 
 
 def load_config():
-    file_stream = open("configs/config.yml", 'r')
     global config
-    config = yaml.safe_load(file_stream)
+    global recipient_map
+    recipient_map = _read_yaml("configs/recipient_map.yml")
+    config = _read_yaml("configs/config.yml")
     print("Loaded configuration file")
+
+
+def _read_yaml(path):
+    stream = open(path, 'r')
+    yaml_data = yaml.safe_load(stream)
+    stream.close()
+    return yaml_data
 
 
 def get_host():
@@ -32,3 +41,10 @@ def get_mail_username():
 
 def get_email_ratelimit():
     return config["email_ratelimit"]
+
+
+def get_recipients(uuid):
+    if uuid in recipient_map:
+        return recipient_map[uuid]
+    else:
+        return []
