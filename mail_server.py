@@ -14,7 +14,6 @@ def connect():
     print("Connected!")
     mail_server.ehlo()
     mail_server.starttls()
-    print("Secure connection established")
     email_password = getpass.getpass(prompt="Please insert mail account password ({}): ".format(get_mail_username()))
     mail_server.login(get_mail_username(), email_password)
 
@@ -29,5 +28,5 @@ def send_mail(recipients, subject, content):
     message = content
     msg.attach(MIMEText(message))
     mail_server.sendmail(from_mail, recipients, msg.as_string())
-    print("Email Sent!")
+    print(f"Email was sent to {', '.join(recipients)}")
     mail_server.quit()
