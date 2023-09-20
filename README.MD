@@ -60,6 +60,36 @@ email the recipients mapped to the UUID above
     "UUID": "b21d9028-d98b-44fb-a9b1-b441b94cad58"
 }
 ```
+
+# Frontend implementation
+Simply perform a http request with the data you want, see a below JS example
+
+```javascript
+function sembleEmailRequest() {
+
+    let form_data = {
+        "name": "Your Name",
+        "message": "Your Email Body here",
+        "UUID": "b21d9028-d98b-44fb-a9b1-b441b94cad58"
+    }
+
+    fetch("https://email.sembleit.ro/", {
+        method: 'POST',
+        body: form_data,
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    }).then((response) => {
+        console.log(response.json())
+        return response.json();
+    }).catch((error) => {
+        console.log(error)
+    });
+}
+```
+
+
 # Usage
 
 Download the latest release from github, open a command prompt 
