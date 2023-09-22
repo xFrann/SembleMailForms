@@ -1,1 +1,11 @@
-b21d9028-d98b-44fb-a9b1-b441b94cad58: ["example@frann.dev", "example2@frann.dev"]
+# Subject Format supports placeholders
+# See list of placeholders on GitHub https://github.com/xFrann/SembleMailForms
+
+b21d9028-d98b-44fb-a9b1-b441b94cad58:
+  friendly_name: "Example website"
+  recipients: ["frangumada@gmail.com"]
+  subject_format: "[%friendly_name%] Website Email from %name% - %subject%"
+977c3011-0b24-4a2d-927b-3d68a932a0e8:
+  friendly_name: "Another Website"
+  recipients: ["frangumada@gmail.com"]
+  subject_format: "%friendly_name% Email - from %name%"

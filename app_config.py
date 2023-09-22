@@ -40,11 +40,35 @@ def get_mail_username():
 
 
 def get_email_ratelimit():
-    return config["email_ratelimit"]
+    return config['email_ratelimit']
+
+
+def get_subscription_ratelimit():
+    return config['subscription_ratelimit']
 
 
 def get_recipients(uuid):
     if uuid in recipient_map:
-        return recipient_map[uuid]
+        return recipient_map[uuid]['recipients']
     else:
         return []
+
+
+def get_friendly_name(uuid):
+    if uuid in recipient_map:
+        return recipient_map[uuid]['friendly_name']
+
+
+def get_subject_format(uuid):
+    if uuid in recipient_map:
+        return recipient_map[uuid]['subject_format']
+
+
+def get_from_config(key):
+    if key in config:
+        return config.get(key)
+
+
+def get_from_rec_map(key):
+    if key in recipient_map:
+        return recipient_map.get(key)
