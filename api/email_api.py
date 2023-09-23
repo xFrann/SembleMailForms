@@ -3,9 +3,10 @@ import json
 from flask import Flask, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+
+from api.api_utilities import parse_subject_placeholders, validate_body
 from mail_server import send_mail
-from app_config import get_email_ratelimit, get_recipients, get_subscription_ratelimit, get_friendly_name, \
-    get_from_rec_map, get_subject_format, is_uuid_valid, remove_recipient_from_website, get_host, get_port
+from app_config import get_email_ratelimit, get_recipients, get_subscription_ratelimit, get_friendly_name, get_subject_format, is_uuid_valid, remove_recipient_from_website, get_host, get_port
 from hashing.hashing import generate_hash, validate_hash
 
 api = Flask(__name__)
@@ -72,40 +73,3 @@ def generate_unsubscribe_link(email, uuid):
     return f"http://{get_host()}:{get_port()}/unsubscribe?email={email}&uuid={uuid}&hash={hashed_values.hexdigest()}"
 
 
-def parse_subject_placeholders(subject, body):
-    placeholders = ["%name%", "%subject%"]
-    config_placeholders = ["%friendly_name%"]
-
-    for placeholder in config_placeholders:
-        subject = replace_if_exists(subject, placeholder, get_from_rec_map(body['uuid'])[placeholder.strip("%")])
-
-    for placeholder in placeholders:
-        subject = replace_if_exists(subject, placeholder, body.get(placeholder.strip("%")))
-
-    return subject
-
-
-def replace_if_exists(original_string, to_replace, string):
-    modified_string = original_string
-
-    if string is None:
-        modified_string = modified_string.replace(to_replace, "")
-    elif string is not None and to_replace in original_string:
-        modified_string = modified_string.replace(to_replace, string)
-
-    return modified_string
-
-
-def validate_body(post_body):
-    mandatory_body_params = ['name', 'message', 'uuid']
-
-    missing_params = False
-    missing_parameters = []
-
-    for key in mandatory_body_params:
-        if key not in post_body:
-            missing_params = True
-            missing_parameters.append(key)
-
-    if missing_params:
-        raise ValueError(f"{', '.join(missing_parameters)} missing from the request body")
