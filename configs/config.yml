@@ -6,6 +6,8 @@ port: 1025
 # Endpoint configuration
 email_ratelimit: "3/minutes" # This translates to 3 requests per minute from the same IP
 subscription_ratelimit: "1/hours"
+
+# this is an example secret key, please change this if you're using this configuration as a reference
 secret_key: "3w!5%cl(h%82chrcda@6vin-nn%@zy8r!rx%i0vy7$o_j@w-5t"
 
 # Email configuration
