@@ -19,6 +19,17 @@ def _read_yaml(path):
     return yaml_data
 
 
+def _write_yaml(path, new_state):
+    stream = open(path, 'w')
+    yaml.safe_dump(new_state, stream, default_flow_style=False)
+    stream.close()
+
+
+def remove_recipient_from_website(recipient, uuid):
+    recipient_map[uuid]['recipients'] = get_recipients(uuid).remove(recipient)
+    _write_yaml("configs/recipient_map.yml", recipient_map)
+
+
 def get_host():
     return config['host']
 
@@ -45,6 +56,12 @@ def get_email_ratelimit():
 
 def get_subscription_ratelimit():
     return config['subscription_ratelimit']
+
+
+def is_uuid_valid(uuid):
+    if uuid not in recipient_map:
+        return False
+    return True
 
 
 def get_recipients(uuid):
