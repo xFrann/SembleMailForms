@@ -18,15 +18,15 @@ def connect():
     mail_server.login(get_mail_username(), email_password)
 
 
-def send_mail(recipients, subject, content):
+def send_mail(recipient, subject, content):
     from_mail = get_mail_username()
 
     msg = MIMEMultipart()
     msg['From'] = from_mail
-    msg['To'] = ", ".join(recipients)
+    msg['To'] = recipient
     msg['Subject'] = subject
     message = content
     msg.attach(MIMEText(message))
-    mail_server.sendmail(from_mail, recipients, msg.as_string())
-    print(f"Email was sent to {', '.join(recipients)}")
+    mail_server.sendmail(from_mail, recipient, msg.as_string())
+    print(f"Email was sent to {recipient}")
     mail_server.quit()
