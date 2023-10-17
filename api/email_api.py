@@ -4,7 +4,7 @@ from flask import Flask, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
-from api.api_utilities import parse_subject_placeholders, validate_body
+from api.api_utilities import parse_subject_placeholders, validate_body, log_ip
 from mail_server import send_mail
 from app_config import get_email_ratelimit, get_recipients, get_subscription_ratelimit, get_friendly_name, get_subject_format, is_uuid_valid, remove_recipient_from_website, get_host, get_port
 from hashing.hashing import generate_hash, validate_hash
@@ -18,6 +18,7 @@ limiter = Limiter(app=api, key_func=get_remote_address)
 def post_mail():
     post_body = request.json
 
+    log_ip(request)
     recipients = get_recipients(post_body['uuid'])
     try:
         validate_body(post_body)
@@ -30,18 +31,22 @@ def post_mail():
 
     print(f"Received POST Request with data: {post_body}")
     email_subject = parse_subject_placeholders(get_subject_format(post_body['uuid']), post_body)
+    failures = 0
     for recipient in recipients:
         message = str(post_body['message']) + "\n unsubscribe:" + str(generate_unsubscribe_link(recipient, post_body['uuid']))
-        send_mail(recipient, email_subject, message)
+        print(f"Received Post Request to send email with the following parameters [recipient: {recipient}] [subject: {email_subject}] [message: {message}]")
+        mail_sent = send_mail(recipient, email_subject, message)
+        if not mail_sent:
+            failures += 1
 
-    return json.dumps({"success": "Email was sent successfully to recipients"}), 200
+    return json.dumps({"success": "Email was sent to recipients, failed to send to (" + str(failures) + ") recipients"}), 200
 
 
 @api.route("/subscription", methods=['POST'])
 @limiter.limit(get_subscription_ratelimit)
 def unsubscribe():
     post_body = request.json
-
+    log_ip(request)
     email = post_body.get("email")
     uuid = post_body.get("uuid")
     posted_hash = post_body.get("hash")
