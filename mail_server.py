@@ -1,5 +1,4 @@
 import smtplib
-from smtplib import SMTP
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import getpass
@@ -31,7 +30,7 @@ def send_mail(recipient, subject, content):
     msg['To'] = recipient
     msg['Subject'] = subject
     message = content
-    msg.attach(MIMEText(message))
+    msg.attach(MIMEText(message, 'html'))
 
     try:
         print(f"Sending mail: [from: {from_mail}, recipient: {recipient}]")
