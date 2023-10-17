@@ -36,7 +36,7 @@ def post_mail():
         html_message = get_template_as_string("default")
         html_parsed_message = parse_placeholders(html_message, post_body)
         html_parsed_message = parse_unsubscribe(html_parsed_message, str(generate_unsubscribe_link(recipient, post_body['uuid'])))
-        print(f"Received Post Request to send email with the following parameters [recipient: {recipient}] [subject: {email_subject}] [message: {html_parsed_message}]")
+        print(f"Received Post Request to send email with the following parameters [recipient: {recipient}] [subject: {email_subject}]")
         mail_sent = send_mail(recipient, email_subject, html_parsed_message)
         if not mail_sent:
             failures += 1
