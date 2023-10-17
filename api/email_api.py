@@ -4,7 +4,7 @@ from flask import Flask, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
-from api.api_utilities import parse_subject_placeholders, validate_body, log_ip
+from api.api_utilities import parse_placeholders, validate_body, log_ip, get_template_as_string, parse_unsubscribe
 from mail_server import send_mail
 from app_config import get_email_ratelimit, get_recipients, get_subscription_ratelimit, get_friendly_name, get_subject_format, is_uuid_valid, remove_recipient_from_website, get_host, get_port
 from hashing.hashing import generate_hash, validate_hash
@@ -30,12 +30,14 @@ def post_mail():
         return json.dumps({"error": error.args[0]}), 400
 
     print(f"Received POST Request with data: {post_body}")
-    email_subject = parse_subject_placeholders(get_subject_format(post_body['uuid']), post_body)
+    email_subject = parse_placeholders(get_subject_format(post_body['uuid']), post_body)
     failures = 0
     for recipient in recipients:
-        message = str(post_body['message']) + "\n unsubscribe:" + str(generate_unsubscribe_link(recipient, post_body['uuid']))
-        print(f"Received Post Request to send email with the following parameters [recipient: {recipient}] [subject: {email_subject}] [message: {message}]")
-        mail_sent = send_mail(recipient, email_subject, message)
+        html_message = get_template_as_string("default")
+        html_parsed_message = parse_placeholders(html_message, post_body)
+        html_parsed_message = parse_unsubscribe(html_parsed_message, str(generate_unsubscribe_link(recipient, post_body['uuid'])))
+        print(f"Received Post Request to send email with the following parameters [recipient: {recipient}] [subject: {email_subject}] [message: {html_parsed_message}]")
+        mail_sent = send_mail(recipient, email_subject, html_parsed_message)
         if not mail_sent:
             failures += 1
 
