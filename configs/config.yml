@@ -3,6 +3,9 @@
 host: "0.0.0.0"
 port: 1025
 
+# Log ip on request
+logIp: True
+
 # Endpoint configuration
 email_ratelimit: "3/minutes" # This translates to 3 requests per minute from the same IP
 subscription_ratelimit: "1/hours"
