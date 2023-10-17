@@ -1,4 +1,4 @@
-from app_config import get_from_rec_map
+from app_config import get_from_rec_map, get_from_config
 
 
 def parse_subject_placeholders(subject, body):
@@ -38,3 +38,8 @@ def validate_body(post_body):
 
     if missing_params:
         raise ValueError(f"{', '.join(missing_parameters)} missing from the request body")
+
+
+def log_ip(request):
+    if get_from_config("logIp"):
+        print(f"HTTP Request source IP: ${request.remote_addr}")
