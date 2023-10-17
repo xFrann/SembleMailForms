@@ -1,17 +1,23 @@
+import os.path
+
 from app_config import get_from_rec_map, get_from_config
 
 
-def parse_subject_placeholders(subject, body):
-    placeholders = ["%name%", "%subject%"]
+def parse_placeholders(text, body):
+    placeholders = ["%name%", "%subject%", "%from%", "%message%"]
     config_placeholders = ["%friendly_name%"]
 
     for placeholder in config_placeholders:
-        subject = replace_if_exists(subject, placeholder, get_from_rec_map(body['uuid'])[placeholder.strip("%")])
+        text = replace_if_exists(text, placeholder, get_from_rec_map(body['uuid'])[placeholder.strip("%")])
 
     for placeholder in placeholders:
-        subject = replace_if_exists(subject, placeholder, body.get(placeholder.strip("%")))
+        text = replace_if_exists(text, placeholder, body.get(placeholder.strip("%")))
 
-    return subject
+    return text
+
+
+def parse_unsubscribe(text, link):
+    return replace_if_exists(text, "%unsubscribe_link%", link)
 
 
 def replace_if_exists(original_string, to_replace, string):
@@ -43,3 +49,11 @@ def validate_body(post_body):
 def log_ip(request):
     if get_from_config("logIp"):
         print(f"HTTP Request source IP: ${request.remote_addr}")
+
+
+def get_template_as_string(template_name):
+    root_dir = os.path.dirname(os.path.abspath(__file__))
+    root_dir = root_dir[:-4]
+    template_path = f"{root_dir}\\email_templates\\{template_name}\\{template_name}.html"
+    template = open(template_path, 'r').read()
+    return template
