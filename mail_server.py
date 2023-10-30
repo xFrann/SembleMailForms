@@ -2,6 +2,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import getpass
+import os
 from app_config import get_mail_host, get_mail_port, get_mail_username
 email_password: str
 
@@ -14,7 +15,11 @@ def connect(reconnect: bool):
     mail_server.ehlo()
     mail_server.starttls()
     if not reconnect:
-        email_password = getpass.getpass(prompt="Please insert mail account password ({}): ".format(get_mail_username()))
+        if "SEMBLE_MAIL_PASSWORD" not in os.environ:
+            print("Environment variable for password is not set, prompting for password...")
+            email_password = getpass.getpass(prompt="Please insert mail account password ({}): ".format(get_mail_username()))
+        else:
+            email_password = os.environ.get('SEMBLE_MAIL_PASSWORD')
     mail_server.login(get_mail_username(), email_password)
     return mail_server
 
