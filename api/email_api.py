@@ -1,21 +1,30 @@
 import json
 
-from flask import Flask, request
+from flask import Flask, request, make_response
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-
+from api.cors_handler import add_headers_to_response
 from api.api_utilities import parse_placeholders, validate_body, log_ip, get_template_as_string, parse_unsubscribe
 from mail_server import send_mail
-from app_config import get_email_ratelimit, get_recipients, get_subscription_ratelimit, get_friendly_name, get_subject_format, is_uuid_valid, remove_recipient_from_website, get_host, get_port
+from app_config import get_email_ratelimit, get_recipients, get_subscription_ratelimit, get_friendly_name, \
+    get_subject_format, is_uuid_valid, remove_recipient_from_website, get_host, get_port, get_from_rec_map
 from hashing.hashing import generate_hash, validate_hash
 
 api = Flask(__name__)
 limiter = Limiter(app=api, key_func=get_remote_address)
 
 
-@api.route("/email", methods=['POST'])
+@api.route("/email", methods=['POST', 'OPTIONS'])
 @limiter.limit(get_email_ratelimit)
 def post_mail():
+    if request.method == "OPTIONS":
+        response = make_response()
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add('Access-Control-Allow-Headers', "*")
+        response.headers.add('Access-Control-Allow-Methods', "*")
+
+        return response
+
     post_body = request.json
 
     log_ip(request)
@@ -24,27 +33,54 @@ def post_mail():
         validate_body(post_body)
 
         if not recipients:
-            return json.dumps({"error": "UUID Is invalid or no recipients found server side"}), 400
+            response = make_response(json.dumps({"error": "UUID Is invalid or no recipients found server side"}), 400)
+            add_headers_to_response(response)
+            return response
+
+        required_fields = get_from_rec_map(post_body['uuid'])['required_fields']
+
+        if required_fields is not None:
+            for field in required_fields:
+                if field not in post_body:
+                    response = make_response(json.dumps({"error": f"Required field missing ${field}"}), 400)
+                    add_headers_to_response(response)
+                    return response
 
     except ValueError as error:
-        return json.dumps({"error": error.args[0]}), 400
+        response = make_response(json.dumps({"error": error.args[0]}), 400)
+        add_headers_to_response(response)
+        return response
 
     print(f"Received POST Request with data: {post_body}")
     email_subject = parse_placeholders(get_subject_format(post_body['uuid']), post_body)
     failures = 0
+
+    template_name = "default"
+    template_name_from_config = get_from_rec_map(uuid=post_body["uuid"], key="template")
+
+    if template_name_from_config is not None:
+        template_name = template_name_from_config
+
+    html_message = get_template_as_string(template_name)
+    html_parsed_message = parse_placeholders(html_message, post_body)
+
     for recipient in recipients:
-        html_message = get_template_as_string("default")
-        html_parsed_message = parse_placeholders(html_message, post_body)
-        html_parsed_message = parse_unsubscribe(html_parsed_message, str(generate_unsubscribe_link(recipient, post_body['uuid'])))
-        print(f"Received Post Request to send email with the following parameters [recipient: {recipient}] [subject: {email_subject}]")
+        html_parsed_message = parse_unsubscribe(html_parsed_message,
+                                                str(generate_unsubscribe_link(recipient, post_body['uuid'])))
+        print(
+            f"Received Post Request to send email with the following parameters [recipient: {recipient}] [subject: {email_subject}]")
         mail_sent = send_mail(recipient, email_subject, html_parsed_message)
         if not mail_sent:
             failures += 1
 
-    return json.dumps({"success": "Email was sent to recipients, failed to send to (" + str(failures) + ") recipients"}), 200
+    response = make_response(
+        {"success": "Email was sent to recipients, failed to send to (" + str(failures) + ") recipients"}, 200)
+    add_headers_to_response(response)
+
+    return response
 
 
-@api.route("/subscription", methods=['POST'])
+@api.route("/subscription", methods=['POST', 'OPTIONS'])
 @limiter.limit(get_subscription_ratelimit)
 def unsubscribe():
     post_body = request.json
@@ -78,5 +114,3 @@ def generate_unsubscribe_link(email, uuid):
     hashed_values = generate_hash(email, uuid)
     print(f"Hash for {email} from {get_friendly_name(uuid)} is: {hashed_values.hexdigest()}")
     return f"http://{get_host()}:{get_port()}/unsubscribe?email={email}&uuid={uuid}&hash={hashed_values.hexdigest()}"
-
-
