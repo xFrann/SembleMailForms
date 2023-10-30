@@ -18,3 +18,11 @@ secret_key: "3w!5%cl(h%82chrcda@6vin-nn%@zy8r!rx%i0vy7$o_j@w-5t"
 mail_host: "smtp.hostinger.com"
 mail_port: 587 # Don't change, even if provider does not use tls, the protocol will handle it
 mail_username: "contact@sembleit.ro"
+
+# Placeholders
+# Below placeholders will be parsed in templates
+# and will be replaced with values from the post request body
+placeholders: ["%name%", "%subject%", "%from%", "%message%", "%phone%", "%email%"]
+# Custom placeholders can be set in recipient_map config for each customer
+# They will be replaced in the template using key-value pairs set in recipient map
+custom_placeholders: ["%friendly_name%"]
