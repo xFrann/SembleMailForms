@@ -86,6 +86,8 @@ def get_from_config(key):
         return config.get(key)
 
 
-def get_from_rec_map(key):
+def get_from_rec_map(key, uuid=None):
     if key in recipient_map:
+        if uuid is not None:
+            return recipient_map[uuid].get(key)
         return recipient_map.get(key)
