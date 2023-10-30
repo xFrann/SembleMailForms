@@ -4,7 +4,7 @@ from flask import Flask, request, make_response
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from api.cors_handler import add_headers_to_response
-from api.api_utilities import parse_placeholders, validate_body, log_ip, get_template_as_string, parse_unsubscribe
+from api.api_utilities import parse_placeholders, validate_body, log_ip, get_template_as_string, parse_unsubscribe, check_required_field
 from mail_server import send_mail
 from app_config import get_email_ratelimit, get_recipients, get_subscription_ratelimit, get_friendly_name, \
     get_subject_format, is_uuid_valid, remove_recipient_from_website, get_host, get_port, get_from_rec_map
@@ -38,13 +38,17 @@ def post_mail():
             return response
 
         required_fields = get_from_rec_map(post_body['uuid'])['required_fields']
+        required_missing = check_required_field(required_fields, post_body)
 
-        if required_fields is not None:
-            for field in required_fields:
-                if field not in post_body:
-                    response = make_response(json.dumps({"error": f"Required field missing ${field}"}), 400)
-                    add_headers_to_response(response)
-                    return response
+        if required_missing:
+            error_response = "Required field missing: "
+            for missing_field in required_missing:
+                error_response += missing_field
+            response = make_response(json.dumps({"error": error_response}), 400)
+            add_headers_to_response(response)
+            return response
+
+
 
     except ValueError as error:
         response = make_response(json.dumps({"error": error.args[0]}), 400)

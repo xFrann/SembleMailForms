@@ -57,3 +57,13 @@ def get_template_as_string(template_name):
     template_path = f"{root_dir}{os.sep}email_templates{os.sep}{template_name}{os.sep}{template_name}.html"
     template = open(template_path, 'r').read()
     return template
+
+
+def check_required_field(required_fields, post_body):
+    missing_fields = []
+    if required_fields is not None:
+        for field in required_fields:
+            if field not in post_body or not field:
+                missing_fields.append(field)
+
+    return missing_fields
