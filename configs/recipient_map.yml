@@ -7,3 +7,5 @@ b21d9028-d98b-44fb-a9b1-b441b94cad58:
   recipients:
   - frangumada@gmail.com
   subject_format: '[%friendly_name%] Website Email from %name% - %subject%'
+  required_fields: ["name", "email"]
+  template_name: "default"
