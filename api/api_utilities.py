@@ -4,13 +4,13 @@ from app_config import get_from_rec_map, get_from_config
 
 
 def parse_placeholders(text, body):
-    placeholders = ["%name%", "%subject%", "%from%", "%message%"]
-    config_placeholders = ["%friendly_name%"]
+    config_placeholders = get_from_config("placeholders")
+    custom_placeholders = get_from_config("custom_placeholders")
 
-    for placeholder in config_placeholders:
+    for placeholder in custom_placeholders:
         text = replace_if_exists(text, placeholder, get_from_rec_map(body['uuid'])[placeholder.strip("%")])
 
-    for placeholder in placeholders:
+    for placeholder in config_placeholders:
         text = replace_if_exists(text, placeholder, body.get(placeholder.strip("%")))
 
     return text
@@ -54,6 +54,6 @@ def log_ip(request):
 def get_template_as_string(template_name):
     root_dir = os.path.dirname(os.path.abspath(__file__))
     root_dir = root_dir[:-4]
-    template_path = f"{root_dir}\\email_templates\\{template_name}\\{template_name}.html"
+    template_path = f"{root_dir}{os.sep}email_templates{os.sep}{template_name}{os.sep}{template_name}.html"
     template = open(template_path, 'r').read()
     return template
