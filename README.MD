@@ -89,6 +89,22 @@ function sembleEmailRequest() {
 }
 ```
 
+# Feel free to create your own docker-compose.yml, take below example:
+```
+semble_email:
+  container_name: semble-email-container
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:1025:1025"
+    volumes:
+      - ./semble_email/configs:/home/semble_email/configs
+    environment:
+      - SEMBLE_MAIL_PASSWORD=YOUREMAILPASSWORDHERE
+```
+Note that the email password will only work trough env variable when docker is used, manually inserting password at startup is not supported currently.
+In the directory then run `sudo docker compose up -d`
+
 
 # Usage
 
