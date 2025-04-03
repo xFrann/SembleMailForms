@@ -73,7 +73,7 @@ function sembleEmailRequest() {
         "UUID": "b21d9028-d98b-44fb-a9b1-b441b94cad58"
     }
 
-    fetch("https://email.sembleit.ro/", {
+    fetch("https://email.sembleit.ro/email", {
         method: 'POST',
         body: form_data,
         headers: {
